@@ -1,0 +1,58 @@
+BootStrap: library
+From: ubuntu:16.04
+
+
+%labels
+    sylabs <https://github.com/sylabs/examples/lang/julia>
+    Shengwei Hou <housw2010@gmail.com>
+    Version v1.1.1
+
+
+%help
+    # help cmd: singularity run-help Julia.sif
+    This singularity container encapsulates the Julia interpreter, 
+    it can run Julia applications as: 
+    'singularity run Julia.sif your_julia_script.jl'
+
+
+%runscript
+    # check if there any arguments,
+    if [ -z "$@" ]; then
+        # if theres non, test julia:
+        echo `julia -v`
+        echo 'println("Usage: singularity run Julia.sif your_julia_script.jl")' | julia
+    else
+        # if theres an argument, then run it! and hope its a julia script :)
+        julia "$@"
+    fi
+
+
+%post
+    # environmental variables available at building time
+    echo 'export JULIA_VERSION=1.1.1' >>$SINGULARITY_ENVIRONMENT
+    apt-get -y update && \
+    apt-get -y install curl tar gzip && \
+    apt-get clean && apt-get autoremove
+
+    # now, download and install julia
+    JULIA_URL="https://julialang-s3.julialang.org/bin/linux/x64/1.1/julia-1.1.1-linux-x86_64.tar.gz"
+    curl -sSL ${JULIA_URL} > julia.tgz && \
+    tar -C / -zxf julia.tgz && rm -f julia.tgz
+
+
+%test
+    # test cmd: singularity test Julia.sif
+    julia -v | grep -q "version ${JULIA_VERSION}"
+    if [ $? -eq 0 ]; then
+        echo "Julia v${JULIA_VERSION} is installed"
+    else
+        echo "It seems Julia is not installed"
+    fi
+
+%environment
+    # export environmental variables available at runtime
+    export  PATH=/julia-1.1.1/bin:$PATH
+    export LD_LIBRARY_PATH=/julia-1.1.1/lib:/julia-1.1.1/lib/julia:$LD_LIBRARY_PATH
+    export LC_ALL=C
+    export JULIA_VERSION=1.1.1
+
