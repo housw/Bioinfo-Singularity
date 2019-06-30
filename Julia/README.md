@@ -11,6 +11,8 @@
 
 ```
 singularity run Julia.sif test.jl
+# or 
+./Julia.sif test.jl
 ```
 
 * ## to test
