@@ -1,0 +1,52 @@
+Bootstrap: docker
+From: shengwei/das_tool:latest
+
+%labels
+    Shengwei Hou <housw2010@gmail.com>
+    Version v1.1.1
+
+%help
+    # help cmd: singularity run-help DAS_Tool.sif
+    This singularity container encapsulates DAS_Tool,  
+    an metagenomic tool to integrate metagenomic binning 
+    results of different binners: 
+    https://github.com/cmks/DAS_Tool 
+    
+    It can be run as follows: 
+    'singularity run DAS_Tool.sif DAS_Tool \
+    -i methodA.scaffolds2bin,...,methodN.scaffolds2bin \
+    -l methodA,...,methodN -c contigs.fa \
+    -o myOutput'
+
+    Reference:
+    Christian M. K. Sieber, Alexander J. Probst, Allison Sharrar, Brian C. Thomas, Matthias Hess, Susannah G. Tringe & Jillian F. Banfield (2018). Recovery of genomes from metagenomes via a dereplication, aggregation and scoring strategy. Nature Microbiology. https://doi.org/10.1038/s41564-018-0171-1.
+
+
+%runscript
+    # check if there any arguments,
+    if [ -z "$@" ]; then
+        # show help if no arguments:
+        echo "\nUsage: singularity run DAS_Tool.sif DAS_Tool -i methodA.scaffolds2bin,...,methodN.scaffolds2bin -l methodA,...,methodN -c contigs.fa -o myOutput"
+        DAS_Tool_help=`DAS_Tool`
+        echo "\n${DAS_Tool_help}\n"
+    else
+        # run das tool with arguments 
+        /bin/bash "$@"
+    fi
+
+%test
+    # test cmd: singularity test DAS_Tool.sif
+    DAS_Tool | grep -q "Usage: DAS_Tool -i"
+    if [ $? -eq 0 ]; then
+        echo "DAS_Tool is installed"
+    else
+        echo "It seems DAS_Tool is not installed"
+    fi
+
+%environment
+    # export environmental variables available at runtime
+    export PATH=$PATH:/DAS_Tool/current
+    export PATH=/usr/local/bin:$PATH
+    export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+    export LC_ALL=C
+
